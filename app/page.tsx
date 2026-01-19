@@ -529,6 +529,15 @@ export default function Home() {
               <div className="tagline">Insight-quality, human-grounded call reviews</div>
             </div>
           </div>
+          <a
+            className="repo-link"
+            href="https://github.com/ameya1252/service-call-analyzer"
+            target="_blank"
+            rel="noreferrer"
+          >
+            <span className="repo-icon" aria-hidden="true">🐙</span>
+            Repo
+          </a>
           <div className="header-status">
             <span className={`status-pill ${status}`}>
               <span className="status-dot" aria-hidden="true" />

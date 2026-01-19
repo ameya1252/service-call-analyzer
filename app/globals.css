@@ -82,6 +82,7 @@ main {
   align-items: center;
   justify-content: space-between;
   gap: 16px;
+  position: relative;
 }
 
 .brand {
@@ -696,4 +697,31 @@ input[type='file'] {
     flex-direction: column;
     align-items: flex-start;
   }
+}
+.repo-link {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid hsl(var(--border));
+  background: hsl(var(--secondary));
+  color: hsl(var(--muted-foreground));
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.repo-link:hover {
+  color: hsl(var(--foreground));
+  box-shadow: var(--shadow-sm);
+}
+
+.repo-icon {
+  font-size: 14px;
 }
