@@ -9,6 +9,11 @@ type Utterance = {
   transcript: string;
 };
 
+type LabeledTurn = {
+  role: 'TECHNICIAN' | 'CUSTOMER';
+  text: string;
+};
+
 type AnalysisResponse = {
   callType: {
     label: string;
