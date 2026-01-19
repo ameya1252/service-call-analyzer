@@ -30,7 +30,10 @@ export async function POST(request: Request) {
   }
 
   const arrayBuffer = await audioFile.arrayBuffer();
-  const contentType = audioFile.type || 'audio/mp4';
+  const contentType =
+    audioFile.type && audioFile.type.startsWith('audio/')
+      ? audioFile.type
+      : 'audio/m4a';
 
   const url = new URL(DEEPGRAM_URL);
   url.searchParams.set('model', 'nova-2');

@@ -795,21 +795,29 @@ export default function Home() {
                     <div className="stage-block">
                       <div className="stage-title">Expansion sale</div>
                       <ul>
-                        {analysis.expansionVsAddOns.expansion.map((item, idx) => (
-                          <li key={`expansion-${idx}`}>
-                            {item.point} — {formatEvidence(item.evidence.quote)}
-                          </li>
-                        ))}
+                        {analysis.expansionVsAddOns.expansion.length ? (
+                          analysis.expansionVsAddOns.expansion.map((item, idx) => (
+                            <li key={`expansion-${idx}`}>
+                              {item.point} — {formatEvidence(item.evidence.quote)}
+                            </li>
+                          ))
+                        ) : (
+                          <li>No expansion signals identified.</li>
+                        )}
                       </ul>
                     </div>
                     <div className="stage-block">
                       <div className="stage-title">Add-ons</div>
                       <ul>
-                        {analysis.expansionVsAddOns.addOns.map((item, idx) => (
-                          <li key={`addons-${idx}`}>
-                            {item.point} — {formatEvidence(item.evidence.quote)}
-                          </li>
-                        ))}
+                        {analysis.expansionVsAddOns.addOns.length ? (
+                          analysis.expansionVsAddOns.addOns.map((item, idx) => (
+                            <li key={`addons-${idx}`}>
+                              {item.point} — {formatEvidence(item.evidence.quote)}
+                            </li>
+                          ))
+                        ) : (
+                          <li>No add-on signals identified.</li>
+                        )}
                       </ul>
                     </div>
                   </div>
