@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
 
+export const runtime = 'nodejs';
+
 const DEEPGRAM_URL = 'https://api.deepgram.com/v1/listen';
 
 function normalizeUtterances(utterances: any[]) {
