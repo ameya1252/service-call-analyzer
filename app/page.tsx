@@ -9,11 +9,6 @@ type Utterance = {
   transcript: string;
 };
 
-type LabeledTurn = {
-  role: 'TECHNICIAN' | 'CUSTOMER';
-  text: string;
-};
-
 type AnalysisResponse = {
   callType: {
     label: string;
@@ -141,33 +136,6 @@ function detectRoleByText(text: string) {
   return 'CUSTOMER';
 }
 
-function buildTurns(utterances: Utterance[]) {
-  const speakerRoles = inferSpeakerRoles(utterances);
-  const hasDiarization = new Set(utterances.map((utt) => utt.speaker)).size >= 2;
-
-  const turns: LabeledTurn[] = [];
-  utterances.forEach((utt, index) => {
-    const role = hasDiarization
-      ? speakerRoles[utt.speaker] || 'TECHNICIAN'
-      : detectRoleByText(utt.transcript);
-    const last = turns[turns.length - 1];
-    if (!last || last.role !== role) {
-      turns.push({
-        speakerId: hasDiarization ? utt.speaker : null,
-        role,
-        text: utt.transcript.trim(),
-        startIndex: index,
-        endIndex: index,
-      });
-      return;
-    }
-    last.text = `${last.text} ${utt.transcript.trim()}`.trim();
-    last.endIndex = index;
-  });
-
-  return turns;
-}
-
 function formatDuration(seconds: number | null) {
   if (!seconds || seconds <= 0) return '--:--';
   const total = Math.floor(seconds);
@@ -182,6 +150,19 @@ function formatDuration(seconds: number | null) {
 
 function formatQuote(quote: string) {
   return `"${quote}"`;
+}
+
+function splitTranscriptToUtterances(transcript: string) {
+  if (!transcript) return [];
+  return transcript
+    .split(/(?<=[.!?])\s+/)
+    .map((part, index) => ({
+      start: index,
+      end: index,
+      speaker: 0,
+      transcript: part.trim(),
+    }))
+    .filter((utt) => utt.transcript.length > 0);
 }
 
 function stageBadgeClass(stage: string) {
@@ -258,7 +239,16 @@ export default function Home() {
     () => groupUtterancesByStage(utterances, analysis?.stages ?? null),
     [utterances, analysis?.stages]
   );
-  const transcriptTurns = useMemo(() => buildTurns(utterances), [utterances]);
+  const displayUtterances = useMemo(() => {
+    if (utterances.length > 1) return utterances;
+    if (utterances.length === 1 && utterances[0].transcript.trim()) {
+      return splitTranscriptToUtterances(utterances[0].transcript);
+    }
+    if (transcript.trim()) {
+      return splitTranscriptToUtterances(transcript);
+    }
+    return [];
+  }, [utterances, transcript]);
   const formatEvidence = (quote: string) => (
     <span className="quote-inline">{formatQuote(quote)}</span>
   );
@@ -452,14 +442,17 @@ export default function Home() {
     setLastProcessedFile(fileToSend);
 
     try {
+      const isBlobLike =
+        typeof fileToSend === 'object' &&
+        fileToSend !== null &&
+        'arrayBuffer' in fileToSend;
       console.log('About to append to FormData:', {
         fileToSend,
-        isFile: fileToSend instanceof File,
-        isBlob: fileToSend instanceof Blob,
-        constructor: fileToSend?.constructor?.name,
+        isBlobLike,
+        constructor: (fileToSend as { constructor?: { name?: string } } | null)?.constructor?.name,
       });
 
-      if (!(fileToSend instanceof File) && !(fileToSend instanceof Blob)) {
+      if (!isBlobLike) {
         console.error('ERROR: fileToSend is not a File or Blob!', fileToSend);
         setError('File selection error - please try selecting the file again');
         setStatus('error');
@@ -674,9 +667,9 @@ export default function Home() {
               )}
               {(!analysis || showFullTranscript) && (
                 <div className="transcript-group">
-                  {transcriptTurns.map((turn, idx) => (
-                    <div key={`turn-${idx}`} className="transcript-line">
-                      <div className="transcript-text">{turn.text}</div>
+                  {displayUtterances.map((utt, idx) => (
+                    <div key={`utterance-${idx}`} className="transcript-line">
+                      <div className="transcript-text">{utt.transcript}</div>
                     </div>
                   ))}
                 </div>
@@ -751,7 +744,8 @@ export default function Home() {
                           </div>
                           {primarySignal ? (
                             <p className="analysis-subtext">
-                              <strong>{primarySignal.signal}</strong> — {primarySignal.interpretation} —{' '}
+                              <strong>{primarySignal.signal}</strong>
+                              {'interpretation' in primarySignal ? ` — ${primarySignal.interpretation}` : ''} —{' '}
                               {formatEvidence(primarySignal.evidence.quote)}
                             </p>
                           ) : (
@@ -766,7 +760,8 @@ export default function Home() {
                           </div>
                           {secondarySignal ? (
                             <p className="analysis-subtext">
-                              <strong>{secondarySignal.signal}</strong> — {secondarySignal.interpretation} —{' '}
+                              <strong>{secondarySignal.signal}</strong>
+                              {'interpretation' in secondarySignal ? ` — ${secondarySignal.interpretation}` : ''} —{' '}
                               {formatEvidence(secondarySignal.evidence.quote)}
                             </p>
                           ) : (
